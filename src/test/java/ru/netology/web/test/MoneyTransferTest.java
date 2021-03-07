@@ -56,7 +56,7 @@ class MoneyTransferTest {
         dashboardPage = moneyTransferPage.topUpCardBalance(amount, DataHelper.getSecondCard(authInfo));
 
         assertEquals(firstCardBalance + amount, dashboardPage.checkFirstCardBalance());
-        assertEquals(0, dashboardPage.checkSecondCardBalance());
+        assertEquals(200, dashboardPage.checkSecondCardBalance());
 
         moneyTransferPage = dashboardPage.clickSecondCardButton();
         moneyTransferPage.topUpCardBalance(amount, DataHelper.getFirstCard(authInfo));//возвращаем перевод
