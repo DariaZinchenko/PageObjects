@@ -26,14 +26,28 @@ public class DashboardPage {
         return new MoneyTransferPage();
     }
 
-    public Integer checkFirstCardBalance() {
-        String text = firstCardField.getText();
-        String amount = text.replaceAll("(.*баланс: )|( р\\.[\\s\\S]*)", "");
-        return  Integer.valueOf(amount);
-    }
+    public Integer checkCardBalance(String id) {
 
-    public Integer checkSecondCardBalance() {
-        String text = secondCardField.getText();
+        try {
+            firstCardField = $("[data-test-id='" + id + "']");
+        } catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+        firstCardField = $("[data-test-id='" + id + "']");
+        String text = firstCardField.getText();
+
+       /* switch (id){
+            case ("92df3f1c-a033-48e6-8390-206f6b1f56c0"):
+                text = firstCardField.getText();
+                break;
+
+            case ("0f3f5c2a-249e-4c3d-8287-09f7a039391d"):
+                text = secondCardField.getText();
+                break;
+
+            default:
+                throw new IllegalArgumentException();
+        }*/
         String amount = text.replaceAll("(.*баланс: )|( р\\.[\\s\\S]*)", "");
         return  Integer.valueOf(amount);
     }

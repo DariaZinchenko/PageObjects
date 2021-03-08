@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import ru.netology.web.data.DataHelper;
-import ru.netology.web.page.*;
 import ru.netology.web.data.DataHelper.AuthInfo;
+import ru.netology.web.page.*;
 
 import static com.codeborne.selenide.Selenide.open;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,6 +15,8 @@ class MoneyTransferTest {
 
     AuthInfo authInfo;
     DashboardPage dashboardPage;
+    Integer firstCardBalance;
+    Integer secondCardBalance;
 
     void singIn(){
         open("http://localhost:9999");
@@ -26,8 +28,8 @@ class MoneyTransferTest {
     }
 
     void equalizeCardsBalance(){
-        Integer firstCardBalance = dashboardPage.checkFirstCardBalance();
-        Integer secondCardBalance = dashboardPage.checkSecondCardBalance();
+        firstCardBalance = dashboardPage.checkCardBalance(DataHelper.getFirstCard(authInfo).getId());
+        secondCardBalance = dashboardPage.checkCardBalance(DataHelper.getSecondCard(authInfo).getId());
 
         if (firstCardBalance > secondCardBalance){
             Integer amount = (firstCardBalance + secondCardBalance)/2 - secondCardBalance;
@@ -50,14 +52,17 @@ class MoneyTransferTest {
         singIn();
         equalizeCardsBalance();
 
-        Integer firstCardBalance = dashboardPage.checkFirstCardBalance();
-        Integer secondCardBalance = dashboardPage.checkSecondCardBalance();
+        firstCardBalance = dashboardPage.checkCardBalance(DataHelper.getFirstCard(authInfo).getId());
+        secondCardBalance = dashboardPage.checkCardBalance(DataHelper.getSecondCard(authInfo).getId());
 
         MoneyTransferPage moneyTransferPage = dashboardPage.clickFirstCardButton();
         dashboardPage = moneyTransferPage.topUpCardBalance(amount, DataHelper.getSecondCard(authInfo));
 
-        assertEquals(firstCardBalance + amount, dashboardPage.checkFirstCardBalance());
-        assertEquals(secondCardBalance - amount, dashboardPage.checkSecondCardBalance());
+        Integer actualFirstCardBalance = dashboardPage.checkCardBalance(DataHelper.getFirstCard(authInfo).getId());
+        Integer actualSecondCardBalance = dashboardPage.checkCardBalance(DataHelper.getSecondCard(authInfo).getId());
+
+        assertEquals(firstCardBalance + amount, actualFirstCardBalance);
+        assertEquals(secondCardBalance - amount, actualSecondCardBalance);
     }
 
     @Test
@@ -65,14 +70,17 @@ class MoneyTransferTest {
         singIn();
         equalizeCardsBalance();
 
-        Integer firstCardBalance = dashboardPage.checkFirstCardBalance();
-        Integer amount = dashboardPage.checkSecondCardBalance();
+        firstCardBalance = dashboardPage.checkCardBalance(DataHelper.getFirstCard(authInfo).getId());
+        Integer amount = dashboardPage.checkCardBalance(DataHelper.getSecondCard(authInfo).getId());
 
         MoneyTransferPage moneyTransferPage = dashboardPage.clickFirstCardButton();
         dashboardPage = moneyTransferPage.topUpCardBalance(amount, DataHelper.getSecondCard(authInfo));
 
-        assertEquals(firstCardBalance + amount, dashboardPage.checkFirstCardBalance());
-        assertEquals(0, dashboardPage.checkSecondCardBalance());
+        Integer actualFirstCardBalance = dashboardPage.checkCardBalance(DataHelper.getFirstCard(authInfo).getId());
+        Integer actualSecondCardBalance = dashboardPage.checkCardBalance(DataHelper.getSecondCard(authInfo).getId());
+
+        assertEquals(firstCardBalance + amount, actualFirstCardBalance);
+        assertEquals(0, actualSecondCardBalance);
     }
 
 /*    @Test
@@ -81,11 +89,12 @@ class MoneyTransferTest {
         singIn();
         equalizeCardsBalance();
 
-        Integer firstCardBalance = dashboardPage.checkFirstCardBalance();
-        Integer secondCardBalance = dashboardPage.checkSecondCardBalance();
+        firstCardBalance = dashboardPage.checkCardBalance(DataHelper.getFirstCard(authInfo).getId());
+        secondCardBalance = dashboardPage.checkCardBalance(DataHelper.getSecondCard(authInfo).getId());
         Integer amount = dashboardPage.checkSecondCardBalance() + 1;
 
         MoneyTransferPage moneyTransferPage = dashboardPage.clickFirstCardButton();
+
         dashboardPage = moneyTransferPage.topUpCardBalance(amount, DataHelper.getSecondCard(authInfo));
 
 
@@ -96,14 +105,17 @@ class MoneyTransferTest {
         singIn();
         equalizeCardsBalance();
 
-        Integer firstCardBalance = dashboardPage.checkFirstCardBalance();
-        Integer secondCardBalance = dashboardPage.checkSecondCardBalance();
+        firstCardBalance = dashboardPage.checkCardBalance(DataHelper.getFirstCard(authInfo).getId());
+        secondCardBalance = dashboardPage.checkCardBalance(DataHelper.getSecondCard(authInfo).getId());
         Integer amount = 1200;
 
         MoneyTransferPage moneyTransferPage = dashboardPage.clickSecondCardButton();
         dashboardPage = moneyTransferPage.topUpCardBalance(amount, DataHelper.getFirstCard(authInfo));
 
-        assertEquals(firstCardBalance - amount, dashboardPage.checkFirstCardBalance());
-        assertEquals(secondCardBalance + amount, dashboardPage.checkSecondCardBalance());
+        Integer actualFirstCardBalance = dashboardPage.checkCardBalance(DataHelper.getFirstCard(authInfo).getId());
+        Integer actualSecondCardBalance = dashboardPage.checkCardBalance(DataHelper.getSecondCard(authInfo).getId());
+
+        assertEquals(firstCardBalance - amount, actualFirstCardBalance);
+        assertEquals(secondCardBalance + amount, actualSecondCardBalance);
     }
 }
