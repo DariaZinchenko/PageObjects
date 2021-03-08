@@ -6,7 +6,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import ru.netology.web.data.DataHelper;
 import ru.netology.web.page.*;
-import ru.netology.web.page.LoginPageV2;
 import ru.netology.web.data.DataHelper.AuthInfo;
 
 import static com.codeborne.selenide.Selenide.open;
@@ -14,13 +13,32 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MoneyTransferTest {
 
-    DashboardPage singIn(AuthInfo authInfo){
+    AuthInfo authInfo;
+    DashboardPage dashboardPage;
+
+    void singIn(){
         open("http://localhost:9999");
         val loginPage = new LoginPageV2();
         val verificationPage = loginPage.validLogin(authInfo);
         val verificationCode = DataHelper.getVerificationCodeFor(authInfo);
         DashboardPage dashboardPage = verificationPage.validVerify(verificationCode);
-        return dashboardPage;
+    }
+
+    void equalizeCardsBalance(){
+        Integer firstCardBalance = dashboardPage.checkFirstCardBalance();
+        Integer secondCardBalance = dashboardPage.checkSecondCardBalance();
+
+        if (firstCardBalance > secondCardBalance){
+            Integer amount = (firstCardBalance - secondCardBalance)/2 - secondCardBalance;
+            val moneyTransferPage = dashboardPage.clickSecondCardButton();
+            moneyTransferPage.topUpCardBalance(amount, DataHelper.getFirstCard(authInfo));
+        }
+
+        if (firstCardBalance < secondCardBalance){
+            Integer amount = (secondCardBalance - firstCardBalance)/2 - firstCardBalance;
+            val moneyTransferPage = dashboardPage.clickFirstCardButton();
+            moneyTransferPage.topUpCardBalance(amount, DataHelper.getSecondCard(authInfo));
+        }
     }
 
     @ParameterizedTest(name = "{index} {0}")
@@ -28,8 +46,9 @@ class MoneyTransferTest {
     @CsvSource({"amount = 1, 1",
       "amount = 100, 100"})
     void transferMoneyToFirstCardTest(String testName, Integer amount) {
-        AuthInfo authInfo = DataHelper.getAuthInfo();
-        DashboardPage dashboardPage = singIn(authInfo);
+        authInfo = DataHelper.getAuthInfo();
+        singIn();
+        equalizeCardsBalance();
 
         Integer firstCardBalance = dashboardPage.checkFirstCardBalance();
         Integer secondCardBalance = dashboardPage.checkSecondCardBalance();
@@ -39,15 +58,13 @@ class MoneyTransferTest {
 
         assertEquals(firstCardBalance + amount, dashboardPage.checkFirstCardBalance());
         assertEquals(secondCardBalance - amount, dashboardPage.checkSecondCardBalance());
-
-        moneyTransferPage = dashboardPage.clickSecondCardButton();
-        moneyTransferPage.topUpCardBalance(amount, DataHelper.getFirstCard(authInfo));//возвращаем перевод
     }
 
     @Test
     void transferMoneyToFirstCardEqualLimitTest() {
         AuthInfo authInfo = DataHelper.getAuthInfo();
-        DashboardPage dashboardPage = singIn(authInfo);
+        singIn();
+        equalizeCardsBalance();
 
         Integer firstCardBalance = dashboardPage.checkFirstCardBalance();
         Integer amount = dashboardPage.checkSecondCardBalance();
@@ -56,16 +73,14 @@ class MoneyTransferTest {
         dashboardPage = moneyTransferPage.topUpCardBalance(amount, DataHelper.getSecondCard(authInfo));
 
         assertEquals(firstCardBalance + amount, dashboardPage.checkFirstCardBalance());
-        assertEquals(200, dashboardPage.checkSecondCardBalance());
-
-        moneyTransferPage = dashboardPage.clickSecondCardButton();
-        moneyTransferPage.topUpCardBalance(amount, DataHelper.getFirstCard(authInfo));//возвращаем перевод
+        assertEquals(0, dashboardPage.checkSecondCardBalance());
     }
 
 /*    @Test
     void transferMoneyToFirstCardOverLimitTest() {
         AuthInfo authInfo = DataHelper.getAuthInfo();
-        DashboardPage dashboardPage = singIn(authInfo);
+        singIn();
+        equalizeCardsBalance();
 
         Integer firstCardBalance = dashboardPage.checkFirstCardBalance();
         Integer secondCardBalance = dashboardPage.checkSecondCardBalance();
@@ -80,7 +95,8 @@ class MoneyTransferTest {
     @Test
     void transferMoneyToSecondCardTest() {
         AuthInfo authInfo = DataHelper.getAuthInfo();
-        DashboardPage dashboardPage = singIn(authInfo);
+        singIn();
+        equalizeCardsBalance();
 
         Integer firstCardBalance = dashboardPage.checkFirstCardBalance();
         Integer secondCardBalance = dashboardPage.checkSecondCardBalance();
@@ -91,8 +107,5 @@ class MoneyTransferTest {
 
         assertEquals(firstCardBalance - amount, dashboardPage.checkFirstCardBalance());
         assertEquals(secondCardBalance + amount, dashboardPage.checkSecondCardBalance());
-
-        moneyTransferPage = dashboardPage.clickFirstCardButton();
-        moneyTransferPage.topUpCardBalance(amount, DataHelper.getSecondCard(authInfo));//возвращаем перевод
     }
 }
