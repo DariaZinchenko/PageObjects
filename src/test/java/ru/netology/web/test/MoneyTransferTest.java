@@ -18,10 +18,11 @@ class MoneyTransferTest {
 
     void singIn(){
         open("http://localhost:9999");
+        authInfo = DataHelper.getAuthInfo();
         val loginPage = new LoginPageV2();
         val verificationPage = loginPage.validLogin(authInfo);
         val verificationCode = DataHelper.getVerificationCodeFor(authInfo);
-        DashboardPage dashboardPage = verificationPage.validVerify(verificationCode);
+        dashboardPage = verificationPage.validVerify(verificationCode);
     }
 
     void equalizeCardsBalance(){
@@ -29,13 +30,13 @@ class MoneyTransferTest {
         Integer secondCardBalance = dashboardPage.checkSecondCardBalance();
 
         if (firstCardBalance > secondCardBalance){
-            Integer amount = (firstCardBalance - secondCardBalance)/2 - secondCardBalance;
+            Integer amount = (firstCardBalance + secondCardBalance)/2 - secondCardBalance;
             val moneyTransferPage = dashboardPage.clickSecondCardButton();
             moneyTransferPage.topUpCardBalance(amount, DataHelper.getFirstCard(authInfo));
         }
 
         if (firstCardBalance < secondCardBalance){
-            Integer amount = (secondCardBalance - firstCardBalance)/2 - firstCardBalance;
+            Integer amount = (secondCardBalance + firstCardBalance)/2 - firstCardBalance;
             val moneyTransferPage = dashboardPage.clickFirstCardButton();
             moneyTransferPage.topUpCardBalance(amount, DataHelper.getSecondCard(authInfo));
         }
@@ -46,7 +47,6 @@ class MoneyTransferTest {
     @CsvSource({"amount = 1, 1",
       "amount = 100, 100"})
     void transferMoneyToFirstCardTest(String testName, Integer amount) {
-        authInfo = DataHelper.getAuthInfo();
         singIn();
         equalizeCardsBalance();
 
@@ -62,7 +62,6 @@ class MoneyTransferTest {
 
     @Test
     void transferMoneyToFirstCardEqualLimitTest() {
-        AuthInfo authInfo = DataHelper.getAuthInfo();
         singIn();
         equalizeCardsBalance();
 
@@ -94,7 +93,6 @@ class MoneyTransferTest {
 
     @Test
     void transferMoneyToSecondCardTest() {
-        AuthInfo authInfo = DataHelper.getAuthInfo();
         singIn();
         equalizeCardsBalance();
 
